@@ -2,8 +2,8 @@
 //  QUINIELA MUNDIAL 2026 — APP LOGIC
 // ═══════════════════════════════════════════════════════
 
-const SUPABASE_URL = "https://ezktefxrtiuzymzxadeg.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6a3RlZnhydGl1enltenhhZGVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMjE0MDEsImV4cCI6MjA5NDg5NzQwMX0.yBTiMgErmULqrXS0Qf-xz4yn-X66iPRzm2ZSciPuIR0";
+const SUPABASE_URL = "https://hiegadsufxhfwshmvore.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ywUWVQYnhcZqZKv1PzYB1w_IJ0waQuh";
 
 // ── Supabase fetch ───────────────────────────────────────
 async function sbFetch(path, options = {}) {
