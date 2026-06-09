@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Locos Ruales Mundial2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,24,0.85);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,214,0,0.2);border-top-color:#ffd600;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div id="loading-msg" style="font-family:'DM Sans',sans-serif;color:#ffd600;font-size:15px;">Cargando...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- MODAL EDITAR JUGADOR -->
+<div id="modal-edit" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(8,12,24,0.9);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#0f1829;border:1px solid rgba(255,214,0,0.3);border-radius:16px;padding:28px;width:90%;max-width:360px;display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#ffd600;">✏️ EDITAR JUGADOR</span>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:#8899bb;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <input type="hidden" id="edit-original-name" />
+    <div>
+      <label style="font-size:12px;color:#8899bb;display:block;margin-bottom:6px;">Nombre</label>
+      <input type="text" id="edit-name" maxlength="30" />
+    </div>
+    <div>
+      <label style="font-size:12px;color:#8899bb;display:block;margin-bottom:6px;">PIN</label>
+      <input type="text" id="edit-pin" maxlength="6" />
+    </div>
+    <button class="btn-primary" onclick="saveEditPlayer()">GUARDAR CAMBIOS</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-bg"><div class="field-lines"></div></div>
+  <div class="login-card">
+    <div class="logo-badge">
+      <img src="https://cdn.plus.fifa.com/images/public/cms/24/f2/13/1f/24f2131f-b382-4e76-816b-04b7bc3a756a.png" alt="FIFA Mundial 2026" class="logo-img" />
+    </div>
+    <h1 class="logo-title">LOCOS RUALES<br><span>FIFA WORLD CUP 2026</span></h1>
+    <p class="logo-sub">🇺🇸 EE.UU · 🇨🇦 CANADÁ · 🇲🇽 MÉXICO</p>
+    <div class="form-group">
+      <select id="login-name" onchange="document.getElementById('login-pin').focus()">
+        <option value="">— Selecciona tu nombre —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <input type="password" id="login-pin" placeholder="Tu PIN..." maxlength="6"
+        onkeydown="if(event.key==='Enter') handleLogin()" />
+    </div>
+    <button class="btn-primary" onclick="handleLogin()">ENTRAR AL TORNEO</button>
+    <p class="login-hint">Selecciona tu nombre e ingresa tu PIN</p>
+    <button class="btn-ghost" onclick="showAdminLogin()">Acceso administrador</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ADMIN LOGIN
+════════════════════════════════════════════ -->
+<div id="screen-admin-login" class="screen">
+  <div class="login-bg"><div class="field-lines"></div></div>
+  <div class="login-card">
+    <div class="logo-badge">🔐</div>
+    <h1 class="logo-title">PANEL<br><span>ADMIN</span></h1>
+    <div class="form-group">
+      <input type="password" id="admin-pass" placeholder="Contraseña de admin..."
+        onkeydown="if(event.key==='Enter') handleAdminLogin()" />
+    </div>
+    <button class="btn-primary" onclick="handleAdminLogin()">ACCEDER</button>
+    <button class="btn-ghost" onclick="showScreen('screen-login')">← Volver</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PLAYER APP
+════════════════════════════════════════════ -->
+<div id="screen-player" class="screen">
+  <header class="app-header">
+    <div class="header-left">
+      <span class="header-logo">⚽ MUNDIAL 2026</span>
+    </div>
+    <div class="header-right">
+      <span id="player-greeting" class="header-user"></span>
+      <button class="btn-icon" onclick="showScreen('screen-login')" title="Salir">✕</button>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="picks"     onclick="switchTab('picks')">MIS PICKS</button>
+    <button class="tab"        data-tab="mispuntos" onclick="switchTab('mispuntos')">MIS PUNTOS</button>
+    <button class="tab"        data-tab="tabla"     onclick="switchTab('tabla')">TABLA 🏆</button>
+  </nav>
+
+  <div id="tab-picks" class="tab-content active">
+    <div class="phase-selector" id="phase-selector"></div>
+    <div id="matches-container" class="matches-container"></div>
+    <div class="save-bar">
+      <div id="save-status" class="save-status"></div>
+      <button class="btn-save" onclick="savePlayerPicks()">💾 GUARDAR PICKS</button>
+    </div>
+  </div>
+
+  <div id="tab-mispuntos" class="tab-content">
+    <div class="mispuntos-container" id="mispuntos-container"></div>
+  </div>
+
+  <div id="tab-tabla" class="tab-content">
+    <div id="tabla-grupos-container" style="padding:12px 16px 80px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ADMIN PANEL
+════════════════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <header class="app-header admin-header">
+    <div class="header-left">
+      <span class="header-logo">🔐 ADMIN</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon" onclick="showScreen('screen-login')">✕</button>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="resultados" onclick="switchAdminTab('resultados')">RESULTADOS</button>
+    <button class="tab" data-tab="jugadores"  onclick="switchAdminTab('jugadores')">JUGADORES</button>
+    <button class="tab" data-tab="tabla"      onclick="switchAdminTab('tabla')">TABLA</button>
+    <button class="tab" data-tab="settings"   onclick="switchAdminTab('settings')">CONFIG</button>
+  </nav>
+
+  <!-- RESULTADOS -->
+  <div id="atab-resultados" class="tab-content active">
+    <div class="phase-selector" id="admin-phase-selector"></div>
+    <div id="admin-matches-container" class="matches-container"></div>
+    <div class="save-bar" style="gap:8px;flex-wrap:wrap;">
+      <button class="btn-save btn-auto" style="flex:0 0 auto;font-size:12px;padding:10px 10px;" onclick="toggleAllPhase(true)">✅ Habilitar todos</button>
+      <button class="btn-save btn-auto" style="flex:0 0 auto;font-size:12px;padding:10px 10px;" onclick="toggleAllPhase(false)">🔴 Deshabilitar todos</button>
+      <button class="btn-save btn-auto" onclick="syncResultsFromAPI()">🔄 AUTO</button>
+      <button class="btn-save" onclick="saveResults()">💾 GUARDAR</button>
+    </div>
+  </div>
+
+  <!-- JUGADORES -->
+  <div id="atab-jugadores" class="tab-content">
+    <div class="create-player-card">
+      <h3>➕ Crear jugador</h3>
+      <div class="form-row">
+        <input type="text" id="new-player-name" placeholder="Nombre..." maxlength="30"
+          onkeydown="if(event.key==='Enter') document.getElementById('new-player-pin').focus()" />
+        <input type="text" id="new-player-pin" placeholder="PIN (números)..." maxlength="6"
+          onkeydown="if(event.key==='Enter') createPlayer()" />
+        <button class="btn-create" onclick="createPlayer()">CREAR</button>
+      </div>
+    </div>
+    <div id="admin-players-container" class="admin-players"></div>
+  </div>
+
+  <!-- TABLA -->
+  <div id="atab-tabla" class="tab-content">
+    <div class="tabla-container" id="admin-tabla-container"></div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="atab-settings" class="tab-content">
+    <div class="settings-panel">
+      <div class="settings-card">
+        <h3>🏆 Sistema de puntos</h3>
+        <div class="setting-row">
+          <label>Ganador correcto</label>
+          <input type="number" id="pts-winner" value="1" min="0" max="5" />
+        </div>
+        <div class="setting-row">
+          <label>Goles de UN equipo correctos (+extra)</label>
+          <input type="number" id="pts-partial" value="1" min="0" max="5" />
+        </div>
+        <div class="setting-row">
+          <label>Marcador exacto (ambos equipos)</label>
+          <input type="number" id="pts-exact" value="4" min="1" max="10" />
+        </div>
+        <p style="font-size:12px;color:#8899bb;line-height:1.5">
+          Ej: predices Ecuador 2-0, resultado 2-0 → <strong style="color:#ffd600">4pts</strong><br>
+          Predices Ecuador 2-1, resultado 2-0 → ganador 1pt + goles Ecuador correcto 1pt = <strong style="color:#ffd600">2pts</strong><br>
+          Predices Ecuador 1-0, resultado 2-0 → ganador 1pt + goles Qatar correcto 1pt = <strong style="color:#ffd600">2pts</strong>
+        </p>
+        <button class="btn-primary" onclick="saveSettings()">GUARDAR CONFIG</button>
+      </div>
+      <div class="settings-card">
+        <h3>🔄 API de resultados</h3>
+        <p style="font-size:13px;color:#8899bb;margin-bottom:10px;">Obtén tu llave gratis en <strong style="color:#ffd600">wc2026api.com</strong></p>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <label>API Key de wc2026api.com</label>
+          <input type="text" id="wc-api-key" placeholder="wc2026_..." style="width:100%;" />
+        </div>
+        <button class="btn-primary" onclick="saveApiKey()">GUARDAR API KEY</button>
+      </div>
+      <div class="settings-card danger-card">
+        <h3>Zona peligrosa</h3>
+        <button class="btn-danger" onclick="resetAllData()">⚠️ BORRAR TODOS LOS DATOS</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
